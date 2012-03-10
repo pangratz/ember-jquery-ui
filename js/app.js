@@ -1,17 +1,17 @@
-var App = SC.Application.create();
+var App = Em.Application.create();
 
 // Put jQuery UI inside its own namespace
 JQ = {};
 
-// Create a new mixin for jQuery UI widgets using the new SproutCore 2.0
+// Create a new mixin for jQuery UI widgets using the Ember
 // mixin syntax.
-JQ.Widget = SC.Mixin.create({
-  // When SproutCore creates the view's DOM element, it will call this
+JQ.Widget = Em.Mixin.create({
+  // When Ember creates the view's DOM element, it will call this
   // method.
-  didCreateElement: function() {
+  didInsertElement: function() {
     this._super();
 
-    // Make jQuery UI options available as SproutCore properties
+    // Make jQuery UI options available as Ember properties
     var options = this._gatherOptions();
 
     // Make sure that jQuery UI events trigger methods on this view.
@@ -22,18 +22,18 @@ JQ.Widget = SC.Mixin.create({
     var ui = jQuery.ui[this.get('uiType')](options, this.get('element'));
 
     // Save off the instance of the jQuery UI widget as the `ui` property
-    // on this SproutCore view.
+    // on this Ember view.
     this.set('ui', ui);
   },
 
-  // When SproutCore tears down the view's DOM element, it will call
+  // When Ember tears down the view's DOM element, it will call
   // this method.
   willDestroyElement: function() {
     var ui = this.get('ui');
 
     if (ui) {
       // Tear down any observers that were created to make jQuery UI
-      // options available as SproutCore properties.
+      // options available as Ember properties.
       var observers = this._observers;
       for (var prop in observers) {
         if (observers.hasOwnProperty(prop)) {
@@ -47,17 +47,17 @@ JQ.Widget = SC.Mixin.create({
   // Each jQuery UI widget has a series of options that can be configured.
   // For instance, to disable a button, you call
   // `button.options('disabled', true)` in jQuery UI. To make this compatible
-  // with SproutCore bindings, any time the SproutCore property for a
+  // with Ember bindings, any time the Ember property for a
   // given jQuery UI option changes, we update the jQuery UI widget.
   _gatherOptions: function() {
     var uiOptions = this.get('uiOptions'), options = {};
 
     // The view can specify a list of jQuery UI options that should be treated
-    // as SproutCore properties.
+    // as Ember properties.
     uiOptions.forEach(function(key) {
       options[key] = this.get(key);
 
-      // Set up an observer on the SproutCore property. When it changes,
+      // Set up an observer on the Ember property. When it changes,
       // call jQuery UI's `setOption` method to reflect the property onto
       // the jQuery UI widget.
       var observer = function() {
@@ -78,7 +78,7 @@ JQ.Widget = SC.Mixin.create({
   // Each jQuery UI widget has a number of custom events that they can
   // trigger. For instance, the progressbar widget triggers a `complete`
   // event when the progress bar finishes. Make these events behave like
-  // normal SproutCore events. For instance, a subclass of JQ.ProgressBar
+  // normal Ember events. For instance, a subclass of JQ.ProgressBar
   // could implement the `complete` method to be notified when the jQuery
   // UI widget triggered the event.
   _gatherEvents: function(options) {
@@ -97,21 +97,21 @@ JQ.Widget = SC.Mixin.create({
   }
 });
 
-// Create a new SproutCore view for the jQuery UI Button widget
-JQ.Button = SC.View.extend(JQ.Widget, {
+// Create a new Ember view for the jQuery UI Button widget
+JQ.Button = Em.View.extend(JQ.Widget, {
   uiType: 'button',
   uiOptions: ['label', 'disabled'],
 
   tagName: 'button'
 });
 
-// Create a new SproutCore view for the jQuery UI Menu widget (new
+// Create a new Ember view for the jQuery UI Menu widget (new
 // in jQuery UI 1.9). Because it wraps a collection, we extend from
-// SproutCore's CollectionView rather than a normal view.
+// Ember's CollectionView rather than a normal view.
 //
 // This means that you should use `#collection` in your template to
 // create this view.
-JQ.Menu = SC.CollectionView.extend(JQ.Widget, {
+JQ.Menu = Em.CollectionView.extend(JQ.Widget, {
   uiType: 'menu',
   uiOptions: ['disabled'],
   uiEvents: ['select'],
@@ -124,12 +124,16 @@ JQ.Menu = SC.CollectionView.extend(JQ.Widget, {
     this._super(content, start, removed, added);
 
     var ui = this.get('ui');
-    if(ui) { ui.refresh(); }
+    if(ui) {
+      Em.run.next(function(){
+        ui.refresh();
+      });
+    }
   }
 });
 
-// Create a new SproutCore view for the jQuery UI Progrress Bar widget
-JQ.ProgressBar = SC.View.extend(JQ.Widget, {
+// Create a new Ember view for the jQuery UI Progress Bar widget
+JQ.ProgressBar = Em.View.extend(JQ.Widget, {
   uiType: 'progressbar',
   uiOptions: ['value', 'max'],
   uiEvents: ['change', 'complete']
@@ -137,7 +141,7 @@ JQ.ProgressBar = SC.View.extend(JQ.Widget, {
 
 // Create a simple controller to hold values that will be shared across
 // views.
-App.controller = SC.Object.create({
+App.controller = Em.Object.create({
   progress: 0,
   menuDisabled: true
 });
@@ -174,7 +178,7 @@ App.Button = JQ.Button.extend({
 App.ProgressBar = JQ.ProgressBar.extend({
   // When the jQuery UI progress bar reaches 100%, it will invoke the
   // `complete` event. Recall that JQ.Widget registers a callback for
-  // the `complete` event in `didCreateElement`, which calls the
+  // the `complete` event in `didInsertElement`, which calls the
   // `complete` method.
   complete: function() {
     // When the progress bar finishes, update App.controller with the
@@ -182,13 +186,13 @@ App.ProgressBar = JQ.ProgressBar.extend({
     // value, it will automatically populate with the new people and
     // refresh the menu.
     App.controller.set('people', [
-      SC.Object.create({
+      Em.Object.create({
         name: "Tom DAAAAALE"
       }),
-      SC.Object.create({
+      Em.Object.create({
         name: "Yehuda Katz"
       }),
-      SC.Object.create({
+      Em.Object.create({
         name: "Majd Potatoes"
       })
     ]);
@@ -212,7 +216,6 @@ Template:
              disabledBinding="App.controller.menuDisabled"}}
  <a href="#">
    {{content.name}}
-   {{view JQ.Button labelBinding="parentView.content.name"}}
  </a>
 {{else}}
  <a href="#">LIST NOT LOADED</a>

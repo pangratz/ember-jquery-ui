@@ -86,16 +86,34 @@ a:hover { color: #036; }
     \\ ========================================== //
 */
 
+body {
+  max-width: 320px;
+  margin: 10px;
+}
 
+button.ember-view {
+  width: 100%;
+}
 
+div.ember-view {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
 
+p.annotated {
+  margin-top: 30px;
+  text-align: center;
+}
 
+p.annotated a {
+  color: #66c;
+  text-decoration: none;
+}
 
-
-
-
-
-
+p.annotated a:hover {
+  color: #339;
+  text-decoration: underline;
+}
 
 
 
