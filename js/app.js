@@ -125,7 +125,9 @@ JQ.Menu = Em.CollectionView.extend(JQ.Widget, {
 
     var ui = this.get('ui');
     if(ui) {
-      Em.run.next(function(){
+      // Schedule the refresh for after Ember has completed it's
+      // render cycle
+      Em.run.schedule('render', function(){
         ui.refresh();
       });
     }
