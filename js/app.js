@@ -9,8 +9,6 @@ JQ.Widget = Em.Mixin.create({
   // When Ember creates the view's DOM element, it will call this
   // method.
   didInsertElement: function() {
-    this._super();
-
     // Make jQuery UI options available as Ember properties
     var options = this._gatherOptions();
 
