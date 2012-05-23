@@ -1,7 +1,10 @@
-var App = Em.Application.create();
+/**
+* JQ stuff initially written by Luke Melia, @lukemelia, https://github.com/lukemelia
+* Extended by Clemens Müller, @pangratz, https://github.com/pangratz
+*/
 
 // Put jQuery UI inside its own namespace
-JQ = {};
+JQ = Ember.Namespace.create();
 
 // Create a new mixin for jQuery UI widgets using the Ember
 // mixin syntax.
@@ -17,7 +20,7 @@ JQ.Widget = Em.Mixin.create({
 
     // Create a new instance of the jQuery UI widget based on its `uiType`
     // and the current element.
-    var ui = jQuery.ui[this.get('uiType')](options, this.get('element'));
+    var ui = this.$()[this.get('uiType')](options);
 
     // Save off the instance of the jQuery UI widget as the `ui` property
     // on this Ember view.
@@ -38,7 +41,7 @@ JQ.Widget = Em.Mixin.create({
           this.removeObserver(prop, observers[prop]);
         }
       }
-      ui._destroy();
+      this.$()[this.get('uiType')]('destroy');
     }
   },
 
@@ -60,7 +63,7 @@ JQ.Widget = Em.Mixin.create({
       // the jQuery UI widget.
       var observer = function() {
         var value = this.get(key);
-        this.get('ui')._setOption(key, value);
+        this.$()[this.get('uiType')]('option', key, value);
       };
 
       this.addObserver(key, observer);
@@ -121,12 +124,13 @@ JQ.Menu = Em.CollectionView.extend(JQ.Widget, {
   arrayDidChange: function(content, start, removed, added) {
     this._super(content, start, removed, added);
 
-    var ui = this.get('ui');
+    var ui = this.$();
+    var type = this.get('uiType');
     if(ui) {
       // Schedule the refresh for after Ember has completed it's
       // render cycle
       Em.run.schedule('render', function(){
-        ui.refresh();
+        ui[type]('refresh');
       });
     }
   }
@@ -138,86 +142,3 @@ JQ.ProgressBar = Em.View.extend(JQ.Widget, {
   uiOptions: ['value', 'max'],
   uiEvents: ['change', 'complete']
 });
-
-// Create a simple controller to hold values that will be shared across
-// views.
-App.controller = Em.Object.create({
-  progress: 0,
-  menuDisabled: true
-});
-
-// Create a subclass of `JQ.Button` to define behavior for our button.
-App.Button = JQ.Button.extend({
-  // When the button is clicked...
-  click: function() {
-    // Disable the button.
-    this.set('disabled', true);
-
-    // Increment the progress bar.
-    this.increment();
-  },
-
-  increment: function() {
-    var self = this;
-
-    // Get the current progress value from the controller.
-    var val = App.controller.get('progress');
-
-    if(val < 100) {
-      // If the value is less than 100, increment it.
-      App.controller.set('progress', val + 1);
-
-      // Schedule another increment call from 30ms.
-      setTimeout(function() { self.increment() }, 30);
-    }
-  }
-});
-
-// Create a subclass of `JQ.ProgressBar` to define behavior for our
-// progress bar.
-App.ProgressBar = JQ.ProgressBar.extend({
-  // When the jQuery UI progress bar reaches 100%, it will invoke the
-  // `complete` event. Recall that JQ.Widget registers a callback for
-  // the `complete` event in `didInsertElement`, which calls the
-  // `complete` method.
-  complete: function() {
-    // When the progress bar finishes, update App.controller with the
-    // list of people. Because our template binds the JQ.Menu to this
-    // value, it will automatically populate with the new people and
-    // refresh the menu.
-    App.controller.set('people', [
-      Em.Object.create({
-        name: "Tom DAAAAALE"
-      }),
-      Em.Object.create({
-        name: "Yehuda Katz"
-      }),
-      Em.Object.create({
-        name: "Majd Potatoes"
-      })
-    ]);
-
-    // Set the `menuDisabled` property of our controller to false.
-    // Because the JQ.Menu binds its `disabled` property to
-    // App.controller.menuDisabled, this will enable it.
-    App.controller.set('menuDisabled', false);
-  }
-});
-
-/**
-Template:
-
-{{view App.Button label="Click to Load People"}}
-<br><br>
-{{view App.ProgressBar valueBinding="App.controller.progress"}}
-<br><br>
-{{#collection JQ.Menu
-             contentBinding="App.controller.people"
-             disabledBinding="App.controller.menuDisabled"}}
- <a href="#">
-   {{content.name}}
- </a>
-{{else}}
- <a href="#">LIST NOT LOADED</a>
-{{/collection}}
-*/
