@@ -1,3 +1,6 @@
+/**
+* Application written by Luke Melia, @lukemelia, https://github.com/lukemelia
+*/
 require('jquery');
 require('jquery-ui');
 require('ember');

@@ -1,3 +1,8 @@
+/**
+* JQ stuff initially written by Luke Melia, @lukemelia, https://github.com/lukemelia
+* Extended by Clemens Müller, @pangratz, https://github.com/pangratz
+*/
+
 // Put jQuery UI inside its own namespace
 JQ = Ember.Namespace.create();
 
