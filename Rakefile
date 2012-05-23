@@ -1,4 +1,4 @@
-APPNAME = 'ember-memento'
+APPNAME = 'ember-jquery-ui'
 
 require 'colored'
 require 'rake-pipeline'

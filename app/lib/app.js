@@ -1,4 +1,4 @@
-var App = Em.Application.create();
+App = Em.Application.create();
 
 // Put jQuery UI inside its own namespace
 JQ = {};
@@ -168,7 +168,7 @@ App.Button = JQ.Button.extend({
       App.controller.set('progress', val + 1);
 
       // Schedule another increment call from 30ms.
-      setTimeout(function() { self.increment() }, 30);
+      setTimeout(function() { self.increment(); }, 30);
     }
   }
 });

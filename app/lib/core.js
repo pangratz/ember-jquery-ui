@@ -1,4 +1,5 @@
 require('jquery');
+require('jquery-ui');
 require('ember');
 
-require('ember-skeleton/memento');
+require('ember-jquery-ui/app');
