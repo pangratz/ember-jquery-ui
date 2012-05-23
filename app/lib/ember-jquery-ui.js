@@ -20,7 +20,7 @@ JQ.Widget = Em.Mixin.create({
 
     // Create a new instance of the jQuery UI widget based on its `uiType`
     // and the current element.
-    var ui = jQuery.ui[this.get('uiType')](options, this.get('element'));
+    var ui = this.$()[this.get('uiType')](options);
 
     // Save off the instance of the jQuery UI widget as the `ui` property
     // on this Ember view.
@@ -41,7 +41,7 @@ JQ.Widget = Em.Mixin.create({
           this.removeObserver(prop, observers[prop]);
         }
       }
-      ui._destroy();
+      this.$()[this.get('uiType')]('destroy');
     }
   },
 
@@ -63,7 +63,7 @@ JQ.Widget = Em.Mixin.create({
       // the jQuery UI widget.
       var observer = function() {
         var value = this.get(key);
-        this.get('ui')._setOption(key, value);
+        this.$()[this.get('uiType')]('option', key, value);
       };
 
       this.addObserver(key, observer);
@@ -124,12 +124,13 @@ JQ.Menu = Em.CollectionView.extend(JQ.Widget, {
   arrayDidChange: function(content, start, removed, added) {
     this._super(content, start, removed, added);
 
-    var ui = this.get('ui');
+    var ui = this.$();
+    var type = this.get('uiType');
     if(ui) {
       // Schedule the refresh for after Ember has completed it's
       // render cycle
       Em.run.schedule('render', function(){
-        ui.refresh();
+        ui[type]('refresh');
       });
     }
   }
